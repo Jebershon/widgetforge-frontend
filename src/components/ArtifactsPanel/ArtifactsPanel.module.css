@@ -1,0 +1,270 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-subtle);
+  overflow: hidden;
+  width: 100%; /* controlled by parent grid */
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.headerDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+/* ── Artifact card ── */
+.artifactCard {
+  margin: 14px 14px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  padding: 14px;
+  flex-shrink: 0;
+  animation: fadeUp 0.25s var(--ease-out);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.artifactCardNew {
+  border-color: rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.03);
+  box-shadow: 0 0 20px rgba(16,185,129,0.08);
+}
+
+.artifactIconRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mpkIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.artifactName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.artifactVersion {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.statusBadge {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.status_success { background: var(--success-dim); color: var(--success); }
+.status_warn    { background: var(--warn-dim);    color: var(--warn); }
+.status_error   { background: var(--danger-dim);  color: var(--danger); }
+
+.artifactMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metaLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.metaValue {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.artifactActions {
+  display: flex;
+  gap: 8px;
+}
+
+.downloadBtn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 7px;
+  background: var(--success);
+  border: none;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  transition: opacity 0.15s, transform 0.12s;
+}
+
+.downloadBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.downloadBtn:active { transform: translateY(0); }
+
+.downloadedBtn {
+  background: var(--bg-overlay);
+  color: var(--success);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.moreBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.moreBtn:hover { color: var(--text-primary); border-color: var(--accent-blue); }
+
+/* ── Section header ── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.histCount {
+  margin-left: auto;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+}
+
+/* ── History ── */
+.historyList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.histItem {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.histItem:hover {
+  border-color: var(--border-default);
+  background: rgba(255,255,255,0.015);
+}
+
+.histTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.histBadge {
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.histTime {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+.histName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.histMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.emptyHistory {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.6;
+}
+
+.emptyHistIcon {
+  font-size: 24px;
+}

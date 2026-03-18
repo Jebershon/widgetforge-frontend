@@ -1,0 +1,87 @@
+/* ── WidgetForge Design System ── */
+:root {
+  /* Core surfaces */
+  --bg-base:      #0c0d11;
+  --bg-surface:   #121419;
+  --bg-elevated:  #181c25;
+  --bg-overlay:   #1e2330;
+
+  /* Borders */
+  --border-subtle: #1c2035;
+  --border-default: #252a3d;
+  --border-strong:  #333a54;
+
+  /* Brand accent */
+  --accent-blue:   #2563eb;
+  --accent-cyan:   #06b6d4;
+  --accent-glow:   rgba(37,99,235,0.2);
+  --accent-cyan-glow: rgba(6,182,212,0.15);
+
+  /* Semantic */
+  --success:       #10b981;
+  --success-dim:   rgba(16,185,129,0.1);
+  --warn:          #f59e0b;
+  --warn-dim:      rgba(245,158,11,0.1);
+  --danger:        #ef4444;
+  --danger-dim:    rgba(239,68,68,0.1);
+  --purple:        #8b5cf6;
+  --purple-dim:    rgba(139,92,246,0.12);
+
+  /* Text */
+  --text-primary:  #dde1f0;
+  --text-secondary: #8891b0;
+  --text-muted:    #4b5272;
+  --text-dim:      #2d3352;
+
+  /* Typography */
+  --font-ui:   'Familjen Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Timing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Glassmorphism & Depth */
+  --glass-bg: rgba(18, 20, 25, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --input-depth: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+/* Selection */
+::selection { background: var(--accent-glow); color: var(--text-primary); }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button { cursor: pointer; font-family: inherit; }
+textarea, input { font-family: inherit; }

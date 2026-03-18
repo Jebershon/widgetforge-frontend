@@ -1,0 +1,27 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.workspace {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  /* Columns: Sidebar (dynamic), Resizer (4px), Main (auto), Artifacts (220px) */
+  grid-template-columns: var(--sidebar-width, 480px) 4px 1fr 220px;
+  grid-template-rows: 1fr;
+}
+
+.resizer {
+  width: 4px;
+  background: transparent;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.2s;
+}
+
+.resizer:hover, .resizerActive {
+  background: var(--accent-blue);
+}

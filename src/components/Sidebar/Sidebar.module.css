@@ -1,0 +1,63 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  overflow: hidden;
+  height: 100%;
+}
+
+.modeBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.modeSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  transition: color 0.15s, background 0.15s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.modeBtn:hover:not(.modeBtnActive) {
+  color: var(--text-secondary);
+}
+
+.modeBtnActive {
+  background: linear-gradient(135deg, rgba(37,99,235,0.25), rgba(6,182,212,0.15));
+  color: var(--text-primary);
+  border: 1px solid rgba(37,99,235,0.3);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
