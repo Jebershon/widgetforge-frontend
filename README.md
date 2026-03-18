@@ -65,9 +65,10 @@ The Vite dev server proxies:
 
 ## Phase Roadmap
 
-- ✅ **Phase 1** — Web Widgets (Development complete — Full AI & Manual orchestration)
-- ⬜ **Phase 2** — Native Widgets (Mobile-first widget scaffolding and bundling)
-- ⬜ **Phase 3** — Internal LLM Integration (Direct code generation within the tool via API)
+- ✅ **Phase 1** — Frontend UI & Live Preview
+- ✅ **Phase 2** — Backend Node.js Server + AI Build Orchestration
+- ✅ **Phase 3** — ANSI Error Rendering & UX Refinement
+- ⬜ **Phase 4** — Dockerized Build Runner & Production Auth
 
 ## Design Tokens
 
