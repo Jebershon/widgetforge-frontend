@@ -1,86 +1,217 @@
-# WidgetForge AI Prompt Template
+# WidgetForge — AI Code Generation Guide
+### Generate Mendix Pluggable Widgets using any AI tool
 
-Use this prompt with any AI (Gemini, Claude, ChatGPT, or even smaller local models) to generate code for WidgetForge's **Manual Bundle** mode.
-
----
-
-## 🤖 The Ultimate Prompt
-
-Copy the text below exactly. Replace the brackets `[...]` with your own widget ideas.
-
-> "ACT AS a Senior Mendix & React Developer. Your mission is to generate a professional, production-ready Mendix Pluggable Widget based on these requirements:
-> 
-> **Widget Name:** [Name, e.g., ColorPicker]
-> **Function:** [What it does, e.g., A radial color selector for Mendix forms]
-> 
-> ---
-> ### 📋 OUTPUT RULES (FOR THE AI):
-> 1. Provide **4 separate code blocks** (XML, TSX, CSS, JSON).
-> 2. Use **React 19** and functional components.
-> 3. **NO** imports from `@mendix/*` or `mendix/*`.
-> 4. **NO** use of `createElement`. Use JSX.
-> 5. **XML ID** must be: `com.widgetforge.[widgetnamelowercase].[WidgetName]`
-> 
-> ---
-> ### 📝 STRUCTURE TO FOLLOW:
-> [XML BLOCK]
-> [TSX BLOCK]
-> [CSS BLOCK]
-> [JSON DEPENDENCIES BLOCK]
-> 
-> ---
-> ### 📦 BLOCK 1: Mendix XML (widget.xml)
-> Generate the `<widget>` XML. Include properties for [list your props, e.g., initialColor, opacity].
-> 
-> ### ⚛️ BLOCK 2: React TSX ([WidgetName].tsx)
-> Generate the React component. Use `export function [WidgetName](props: [WidgetName]Props)`.
-> Include `import "./ui/[WidgetName].css";` at the top.
-> 
-> ### 🎨 BLOCK 3: CSS ([WidgetName].css)
-> Generate modern CSS. Use Flexbox/Grid. Avoid fixed widths.
-> 
-> ### 📄 BLOCK 4: Dependencies (JSON)
-> Provide a JSON object of npm packages needed, e.g., `{"lucide-react": "latest"}`. If none, return `{}`."
+> **Compatible with:** Claude, ChatGPT, Gemini, Mistral, and local models (Ollama, LM Studio, etc.)  
+> **Target Platform:** Mendix 10+ Web | React 19 | WidgetForge Manual Bundle Mode
 
 ---
 
-## 🛠️ How to use the output in WidgetForge
+## 🧠 Understanding WidgetForge Before You Prompt
 
-1.  **Switch to Manual Mode**: In the dashboard, click the "Manual Bundle" tab.
-2.  **Paste & Build**:
-    - **XML**: Copy the XML block into the XML editor.
-    - **TSX**: Copy the TSX block into the TSX editor.
-    - **CSS**: Copy the CSS block into the CSS tab.
-    - **JSON**: Copy the JSON object into the Dependencies field.
-3.  **Click Bundle**: WidgetForge will compile and give you a `.mpk` file.
+Before generating code, know what WidgetForge does **for you automatically** so you don't fight it:
 
----
-
-## ⚙️ How it Works (The Backend Logic)
-
-When you click **Bundle**, WidgetForge performs the following steps to ensure a valid Mendix widget:
-
-1.  **Scaffolding**: It creates a clean, professional Mendix widget project structure using a custom programmatic scaffold (replacing the standard CLI to ensure speed and stability).
-2.  **Code Correction**: 
-    - **XML**: It automatically fixes your Widget ID to match Mendix requirements.
-    - **TSX**: It removes accidental `createElement` imports and ensures React 19 compatibility.
-3.  **Automated Build**: It runs `npm install` for your specific dependencies and executes the actual Mendix `pluggable-widgets-tools` build process.
-4.  **CSS Injection**: Since standard Mendix tools often omit CSS, WidgetForge manually injects your `.css` file into the final `.mpk` archive and updates the `package.xml` manifest so it loads correctly in Mendix.
-5.  **Artifact Generation**: The final `.mpk` is served for download, and the temporary build environment is securely wiped.
-
-## 💡 Pro Tips for Small Models:
-- If the model gets confused, try asking for **one block at a time**.
-- If it includes `mendix` imports, delete those lines manually before bundling; WidgetForge handles the environment for you!
+| WidgetForge handles automatically | You must get right in the prompt |
+|---|---|
+| CSS injection into the `.mpk` archive | Correct XML structure & property groups |
+| Fixing malformed Widget IDs | `import React` default import in TSX |
+| Stripping bad Mendix library imports | Using `createElement` — NOT JSX |
+| Running `npm install` & `npm run build` | Scoping all CSS to `.widget-yourwidgetname` |
+| Packaging the final `.mpk` file | Valid JSON for the dependencies block |
 
 ---
 
-## 🚫 Known Limitations
+## ✅ The 4 Non-Negotiable Rules (Read Before Prompting)
 
-To ensure the best results, keep these current limitations in mind:
+These rules exist because of how the Mendix Rollup build pipeline works internally. Breaking any one of them causes a build failure.
 
-1.  **Web Platform Only**: Currently, WidgetForge is optimized for **Web** widgets. Native (Mobile) widget support is coming in Phase 2.
-2.  **React 19**: The build environment is pinned to **React 19**. Code using older React patterns (like `class` components or legacy lifecycle methods) may fail to compile.
-3.  **No Direct Mendix Data Access**: The **Preview** tab in WidgetForge uses mock data (JSON). It cannot connect to your live Mendix database or microflows. Real data binding only happens after you import the `.mpk` into Studio Pro.
-4.  **Internet Required**: Because the server runs `npm install` for your custom dependencies, an active internet connection is required during the bundling process.
-5.  **Build Timeouts**: Very large widgets with dozens of heavy npm dependencies may exceed the server's 10-minute build timeout.
-6.  **Property Mapping**: While the tool generates the widget, you still need to manually configure the matching attributes and data sources in Mendix Studio Pro after importing the `.mpk`.
+> **RULE 1 — NO JSX syntax.**  
+> Write `createElement("div", { className: "foo" }, "Hello")` — never `<div className="foo">Hello</div>`.  
+> The Mendix build uses `"jsx": "react"` in tsconfig (classic transform), not the modern JSX runtime.
+
+> **RULE 2 — ALWAYS import React as default.**  
+> Every TSX file MUST start with:  
+> `import React, { createElement, useState, useRef, useEffect, useCallback } from "react";`  
+> Missing the default `React` import causes error `TS2552: Cannot find name 'createElement'`.
+
+> **RULE 3 — NO Mendix library imports.**  
+> Never import from `mendix/`, `@mendix/`, `mendix/components/*`, or use globals like `mx.ui.*`.  
+> WidgetForge provides its own mock environment. These imports break the preview and the build.
+
+> **RULE 4 — NO CSS import line in TSX.**  
+> Do NOT write `import "./ui/WidgetName.css";` in the TSX file.  
+> WidgetForge injects CSS into the `.mpk` binary directly. That import line causes a build error.
+
+---
+
+## 🤖 The Master Prompt (Copy & Paste)
+
+Replace everything inside `[square brackets]` with your requirements. The rest must stay exactly as written.
+
+```
+ACT AS a Senior Mendix and React developer. Generate a production-ready Mendix 10 Pluggable Widget for WidgetForge.
+
+WIDGET NAME: [e.g., ColorPicker]
+WIDGET FUNCTION: [e.g., A circular HSL color picker that writes a hex string to a Mendix attribute]
+EXTRA PROPERTIES: [e.g., showOpacity: boolean toggle, labelText: string]
+INTERACTIONS: [e.g., clicking a swatch confirms the color; clear button resets to null]
+
+════════════════════════════════════════════
+OUTPUT FORMAT — FOLLOW EXACTLY
+════════════════════════════════════════════
+
+Produce exactly 4 fenced code blocks in this order:
+1. ```xml   — the Mendix widget descriptor
+2. ```tsx   — the React component
+3. ```css   — scoped component styles
+4. ```json  — npm dependency versions (empty object {} if none needed)
+
+No prose between blocks. A short bullet-point notes section is allowed AFTER all 4 blocks.
+
+════════════════════════════════════════════
+BLOCK 1 RULES — XML (widget.xml)
+════════════════════════════════════════════
+
+- Widget ID format:  com.widgetforge.[widgetnamelowercase].[WidgetNamePascalCase]
+- Every <property> tag MUST be inside a <propertyGroup caption="..."> tag.
+- Use type="attribute" for Mendix data bindings (with <attributeTypes> child).
+- Use type="action" for microflow/nanoflow triggers.
+- Use type="enumeration" for dropdowns — always include defaultValue.
+- Use type="boolean" for toggles — always include defaultValue.
+- Use type="integer" for numbers — always include defaultValue.
+- Use type="textTemplate" for plain text / expression strings.
+- Include these system properties in the General group:
+    <systemProperty key="Label" />
+    <systemProperty key="Visibility" />
+    <systemProperty key="Editability" />
+
+════════════════════════════════════════════
+BLOCK 2 RULES — TSX ([WidgetName].tsx)
+════════════════════════════════════════════
+
+- Line 1 MUST be:
+  import React, { createElement, useState, useRef, useEffect, useCallback } from "react";
+  (The default React import is REQUIRED — omitting it causes TS2552 in the Mendix Rollup build.)
+
+- Use createElement() for ALL elements. NEVER use JSX angle-bracket syntax (<div>, <span>, etc.).
+  CORRECT:   createElement("div", { className: "foo" }, "Hello")
+  WRONG:     <div className="foo">Hello</div>
+
+- Use a named export:  export function [WidgetName](props: [WidgetName]Props) { ... }
+  NEVER use:           export default function ...
+
+- Define a Props interface whose keys exactly match the XML property key= attributes:
+  - Attribute props:  { value?: T; setValue: (v: T) => void }
+  - Action props:     () => void
+  - Enum/bool/int:    plain TypeScript type (string | boolean | number)
+
+- DO NOT import CSS. Do NOT write: import "./ui/[WidgetName].css";
+- DO NOT import from "mendix/", "@mendix/", or use mx.ui.* globals.
+- ALL React state in hooks (useState, useReducer, useCallback, useMemo).
+- Close dropdowns on outside click using useRef + document.addEventListener("mousedown").
+- Guard all optional props with optional chaining: props.myAttr?.value
+
+════════════════════════════════════════════
+BLOCK 3 RULES — CSS ([WidgetName].css)
+════════════════════════════════════════════
+
+- EVERY selector must start with .widget-[widgetnamelowercase]
+  e.g., .widget-colorpicker { ... }
+       .widget-colorpicker .cp-swatch { ... }
+- Include the root reset:
+  .widget-[widgetnamelowercase], .widget-[widgetnamelowercase] * { box-sizing: border-box; }
+- Use Flexbox or Grid for layout. Avoid fixed pixel widths on the root element.
+- Provide hover, focus-visible, and disabled states for all interactive elements.
+- Use CSS custom properties (variables) for colors and spacing so Mendix themes can override them.
+- Prefix all @keyframes names: @keyframes [widgetname]-fade-in { ... }
+
+════════════════════════════════════════════
+BLOCK 4 RULES — JSON (dependencies)
+════════════════════════════════════════════
+
+- Return a flat JSON object of npm package names to version strings.
+- Example: { "lucide-react": "latest", "date-fns": "3.6.0" }
+- If the widget uses only React built-ins, return: {}
+- Do NOT include react, react-dom, or mendix packages — they are pre-installed.
+
+════════════════════════════════════════════
+```
+
+---
+
+## 🛠️ How to Use the Output in WidgetForge
+
+1. Open **WidgetForge** → click the **Manual Bundle** tab.
+2. Fill in the **Widget Name** and **Description** fields at the top.
+3. Paste each block into its matching editor tab:
+
+| AI Output Block | WidgetForge Tab |
+|---|---|
+| ` ```xml ` | **XML** tab |
+| ` ```tsx ` | **TSX** tab |
+| ` ```css ` | **CSS** tab |
+| ` ```json ` | **Dependencies** field |
+
+4. Click **Bundle** — WidgetForge compiles, patches, and downloads your `.mpk`.
+5. Import the `.mpk` into **Mendix Studio Pro** and configure your attribute/action bindings.
+
+---
+
+## 💡 Tips for Small / Local Models
+
+Small models (7B–13B parameters) sometimes struggle with all 4 blocks at once. Use this order instead:
+
+**Step 1 — Get the XML first:**
+> *"Generate only the XML block for a Mendix widget named [Name] with these properties: [list]. Follow the WidgetForge XML rules above."*
+
+**Step 2 — Get the TSX referencing the XML:**
+> *"Now generate the TSX block for the XML above. Use createElement, import React as default, no CSS import, named export."*
+
+**Step 3 — Get the CSS:**
+> *"Generate the CSS for this widget. Scope every rule to .widget-[namelower]. Include hover and disabled states."*
+
+**Step 4 — Get the JSON:**
+> *"List only the npm packages used in the TSX above as a JSON object {name: version}. Return {} if none."*
+
+---
+
+## 🚫 Common Mistakes & Fixes
+
+| Symptom | Root Cause | Fix |
+|---|---|---|
+| `TS2552: Cannot find name 'createElement'` | Missing `import React` default | Add `React` to the import |
+| `Module not found: mendix/...` | AI hallucinated Mendix imports | Delete any `import ... from "mendix/..."` lines |
+| CSS not applied in Mendix | CSS import line in TSX | Remove `import "./ui/Widget.css"` from TSX |
+| Widget properties not showing in Studio Pro | `<property>` outside `<propertyGroup>` | Wrap all properties in `<propertyGroup caption="...">` |
+| Build fails with JSX parse error | AI used angle-bracket JSX | Replace all `<tag>` syntax with `createElement("tag", ...)` |
+| Styles bleed into Mendix UI | CSS not scoped | Prefix every rule with `.widget-yourwidgetname` |
+
+---
+
+## ⚙️ What WidgetForge Does Automatically (You Don't Need to Do These)
+
+- ✅ Scaffolds the full Mendix widget project structure
+- ✅ Fixes malformed Widget IDs in XML
+- ✅ Removes accidental `createElement` bare imports
+- ✅ Runs `npm install --legacy-peer-deps` for your dependencies
+- ✅ Executes the full Mendix `pluggable-widgets-tools` build
+- ✅ Injects your CSS file into the `.mpk` ZIP binary
+- ✅ Updates `package.xml` manifest to register CSS assets
+- ✅ Streams real-time build logs to your browser terminal
+- ✅ Securely wipes the temp build environment after download
+
+---
+
+## 🚧 Known Limitations
+
+| Limitation | Detail |
+|---|---|
+| **Web only** | Mobile/Native widget support coming in Phase 2 |
+| **React 19** | Class components and legacy lifecycle methods will fail |
+| **No live Mendix data** | Preview uses mock props — real binding happens in Studio Pro |
+| **Internet required** | `npm install` runs server-side and needs network access |
+| **10-min build timeout** | Widgets with many heavy dependencies may time out |
+| **Manual binding** | After `.mpk` import, you must configure attributes/actions in Studio Pro |
+
+---
+
+*Built for WidgetForge · Mendix Pluggable Widget Platform · Web · React 19*
