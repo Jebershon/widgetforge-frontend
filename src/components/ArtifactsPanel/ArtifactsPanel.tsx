@@ -41,8 +41,18 @@ export function ArtifactsPanel() {
 
 function ArtifactCard({ build, isNew }: { build: BuildRun; isNew?: boolean }) {
   const [downloaded, setDownloaded] = useState(false)
+  const mpkBlobUrl = useStore(s => s.mpkBlobUrl)
 
   const handleDownload = () => {
+    if (mpkBlobUrl && isNew) {
+      const a = document.createElement('a')
+      a.href = mpkBlobUrl
+      a.setAttribute('download', `${build.widgetName}.mpk`)
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      setTimeout(() => document.body.removeChild(a), 100)
+    }
     setDownloaded(true)
     setTimeout(() => setDownloaded(false), 3000)
   }

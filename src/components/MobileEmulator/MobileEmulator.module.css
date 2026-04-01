@@ -1,0 +1,177 @@
+.container {
+  display: flex;
+  padding: 40px;
+  background: var(--bg-surface);
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+/* Beautiful custom scrollbar for the emulator view */
+.container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+.container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  border: 3px solid var(--bg-surface);
+}
+.container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+
+.device {
+  position: relative;
+  width: 360px;
+  height: 760px;
+  background: #1a1a1a;
+  border-radius: 48px;
+  padding: 12px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 2px #333;
+  margin: auto;
+  flex-shrink: 0;
+}
+
+.bezel {
+  background: #000;
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  padding: 8px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #222;
+}
+
+.screen {
+  background: #fff; /* Widget background */
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Hardware Decoration ── */
+.android .bezel::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #111;
+  border-radius: 50%;
+  z-index: 10;
+  border: 1px solid #222;
+}
+
+.ios .bezel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 25px;
+  background: #000;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  z-index: 10;
+}
+
+/* ── UI Elements ── */
+.statusBar {
+  height: 34px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 5;
+}
+
+.statusIcons {
+  display: flex;
+  gap: 6px;
+  opacity: 0.8;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.navBar {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.homeIndicator {
+  width: 80px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+/* ── Physical Buttons ── */
+.powerBtn, .volumeUp, .volumeDown {
+  position: absolute;
+  background: #222;
+  border-radius: 2px;
+}
+
+.powerBtn {
+  width: 3px;
+  height: 50px;
+  right: -3px;
+  top: 140px;
+}
+
+.volumeUp {
+  width: 3px;
+  height: 40px;
+  left: -3px;
+  top: 100px;
+}
+
+.volumeDown {
+  width: 3px;
+  height: 40px;
+  left: -3px;
+  top: 150px;
+}
+
+/* ── Variations ── */
+.android .screen { background: #fafafa; }
+.android .homeIndicator { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #ccc; background: none; }
+
+.shadow {
+  width: 240px;
+  height: 20px;
+  margin-top: 20px;
+  background: rgba(0,0,0,0.4);
+  filter: blur(20px);
+  border-radius: 50%;
+}

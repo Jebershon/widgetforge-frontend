@@ -6,17 +6,38 @@ export interface RuntimeResult {
 }
 
 /**
- * Transpiles TSX code and resolves imports to ESM CDNs (esm.sh).
- * Returns a Blob URL that can be imported as a native ES module.
+ * Transpiles purely utility code (e.g. math.ts) stripping TypeScript syntax.
  */
-export function prepareLiveModule(jsxCode: string): RuntimeResult {
+export function transpileUtil(jsCode: string, filename: string = 'util'): string {
   try {
-    // 1. Transpile TSX to JS
-    // We use Sucrase because it is extremely fast and works well in the browser.
-    const transpiled = transform(jsxCode, {
+    const transpiled = transform(jsCode, {
       transforms: ['typescript', 'jsx'],
       production: false,
     });
+    return transpiled.code;
+  } catch (err: any) {
+    console.error(`Sucrase Transpilation Error in ${filename}:`, err);
+    // Return code that throws the error in the preview console instead of raw TS
+    const escapedMsg = (err?.message || 'Unknown transpilation error').replace(/[`\\$]/g, '\\$&');
+    return `throw new SyntaxError(\`[WidgetForge] Failed to transpile ${filename}: ${escapedMsg}\`);`;
+  }
+}
+
+/**
+ * Transpiles TSX code and resolves imports to ESM CDNs (esm.sh).
+ * Returns a Blob URL that can be imported as a native ES module.
+ */
+export function prepareLiveModule(tsxCode: string): RuntimeResult {
+  try {
+    // 1. Transpile TSX to JS
+    // We use Sucrase because it is extremely fast and works well in the browser.
+    const transpiled = transform(tsxCode, {
+      transforms: ['typescript', 'jsx'],
+      jsxPragma: '_WidgetForgeReact.createElement',
+      jsxFragmentPragma: '_WidgetForgeReact.Fragment',
+      production: false,
+    });
+
 
     // 2. Resolve imports to esm.sh
     // Regex matches: import ... from 'package' or import 'package'
@@ -24,24 +45,32 @@ export function prepareLiveModule(jsxCode: string): RuntimeResult {
     const resolvedCode = transpiled.code.replace(
       /import\s+([\s\S]*?)\s+from\s+['"]([^'"]+)['"]/g,
       (match, imports, path) => {
+        // Phase 3: Route relative utility imports to our virtual importmap domain
+        if (path.startsWith('./utils/')) {
+          return `import ${imports} from 'https://widgetforge.local/${path.replace('./', '')}'`;
+        }
+
         if (path.startsWith('.') || path.startsWith('/') || path.startsWith('http')) {
           return match;
         }
         
-        // Use esm.sh for npm packages. 
-        // We pin React to version 19 to match the widget environment.
+        // We pin React to version 18 because react-native-web relies on unmountComponentAtNode
         if (path === 'react' || path === 'react-dom') {
-          return `import ${imports} from 'https://esm.sh/${path}@19'`;
+          return `import ${imports} from 'https://esm.sh/${path}@18'`;
         }
         
-        return `import ${imports} from 'https://esm.sh/${path}'`;
+        // Phase 2: Map react-native to react-native-web for browser preview
+        if (path === 'react-native') {
+          return `import ${imports} from 'react-native'`;
+        }
+        
+        return `import ${imports} from 'https://esm.sh/${path}?deps=react@18,react-dom@18&external=react-native'`;
       }
     );
 
-    // 3. Ensure 'React' is defined for the hyperscript transform
-    // If the code uses JSX, Sucrase replaces it with React.createElement.
-    // We inject a global React import at the top to ensure it's available.
-    const reactImport = `import * as React from 'https://esm.sh/react@19';\n`;
+    // 3. Inject our isolated React reference for JSX
+    const reactImport = `import * as _WidgetForgeReact from 'https://esm.sh/react@18';\n`;
+
     const finalCode = reactImport + resolvedCode.replace(/import\s+['"]\.?\/[^'"]+\.css['"];?/g, '');
 
     // 4. Create Blob URL

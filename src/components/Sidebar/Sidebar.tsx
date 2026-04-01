@@ -14,16 +14,16 @@ export function Sidebar() {
       <div className={styles.modeBar}>
         <div className={styles.modeSwitcher}>
           <button
-            className={clsx(styles.modeBtn, appMode === 'generate' && styles.modeBtnActive)}
-            onClick={() => setAppMode('generate')}
-          >
-            <span>⚡</span> AI Generate
-          </button>
-          <button
             className={clsx(styles.modeBtn, appMode === 'bundle' && styles.modeBtnActive)}
             onClick={() => setAppMode('bundle')}
           >
             <span>📦</span> Manual Bundle
+          </button>
+          <button
+            className={clsx(styles.modeBtn, appMode === 'generate' && styles.modeBtnActive)}
+            onClick={() => setAppMode('generate')}
+          >
+            <span>⚡</span> AI Generate
           </button>
         </div>
       </div>

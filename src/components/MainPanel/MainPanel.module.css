@@ -326,6 +326,25 @@
   background: transparent;
 }
 
+/* ── Phase 2 Emulator Integration ── */
+.emulatorOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 5;
+  overflow: hidden;
+}
+
+.emulatorIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
 .previewError {
   position: absolute;
   top: 20px;
@@ -400,14 +419,14 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .propGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  animation: slideIn 0.3s ease-out;
+  gap: 6px;
+  animation: slideIn 0.2s ease-out;
 }
 
 @keyframes slideIn {
@@ -440,8 +459,13 @@
 .propDescription {
   font-size: 10px;
   color: var(--text-dim);
-  line-height: 1.5;
+  line-height: 1.4;
   margin-top: -2px;
+  display: none;
+}
+
+.propGroup:hover .propDescription {
+  display: block;
 }
 
 .propInput {
@@ -453,8 +477,7 @@
   font-size: 12px;
   color: var(--text-primary);
   outline: none;
-  transition: all 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  transition: border-color 0.15s;
 }
 
 .propInput:focus {
@@ -463,30 +486,106 @@
   box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
+.propSelect {
+  width: 100%;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.propActionButton {
+  background: rgba(139, 92, 246, 0.08);
+  color: #a78bfa;
+  border: 1.5px solid rgba(139, 92, 246, 0.25);
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.propActionButton:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  transform: translateY(-1px);
+}
+
 .propToggle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
   background: var(--bg-overlay);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border-default);
-  transition: all 0.2s;
+  transition: border-color 0.15s;
 }
 
 .propToggle:hover {
   background: var(--bg-elevated);
+  border-color: var(--border-strong);
 }
 
 .propToggle input {
-  cursor: pointer;
-  accent-color: var(--accent-blue);
+  display: none;
 }
 
-.propToggle span {
-  font-size: 12px;
-  color: var(--text-primary);
+.toggleSlider {
+  width: 32px;
+  height: 18px;
+  background: var(--border-strong);
+  border-radius: 18px;
+  position: relative;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggleSlider::before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.propToggle input:checked + .toggleSlider {
+  background: var(--success);
+}
+
+.propToggle input:checked + .toggleSlider::before {
+  transform: translateX(14px);
+}
+
+.toggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .noProps {
@@ -504,6 +603,209 @@
   content: '∅';
   font-size: 24px;
   opacity: 0.3;
+}
+
+.propListControl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.propHint {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-style: italic;
+  padding-left: 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.propTextarea {
+  width: 100%;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+
+  min-height: 80px;
+  font-family: var(--font-mono);
+  resize: vertical;
+  line-height: 1.4;
+  background: var(--bg-surface);
+}
+
+.propMiniBtn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.propMiniBtn:hover {
+  background: var(--bg-higher);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* ── Datasource Field Mappings ── */
+.fieldMappings {
+  margin-top: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+.fieldMappingsLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-blue, #6366f1);
+  padding: 9px 12px 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.fieldMappingsHint {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.fieldMappingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.fieldMappingRow:last-child {
+  border-bottom: none;
+}
+
+.fieldMappingMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 80px;
+  max-width: 90px;
+  flex-shrink: 0;
+}
+
+.fieldMappingCaption {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldMappingKey {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldMappingControl {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fieldMappingType {
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+.fieldMappingControl .propSelect,
+.fieldMappingControl .propInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.fieldMappingsEmpty {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 10px;
+  margin: 0;
+}
+
+/* ── Property Group Sections (from propertyGroup) ── */
+.propGroupSection {
+  margin-bottom: 12px;
+}
+
+.propGroupHeader {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 14px 6px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 12px;
+}
+
+.propGroupSection:first-child .propGroupHeader {
+  border-top: none;
+  margin-top: 0;
+}
+
+.propOptional {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.propReadonly {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.propReadonlyIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+  opacity: 0.7;
 }
 
 /* ── Pipeline ── */

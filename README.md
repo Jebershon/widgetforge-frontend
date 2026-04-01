@@ -57,7 +57,7 @@ The Vite dev server proxies:
 
 | Panel | Description |
 |---|---|
-| **Prompt Studio** (left) | Chat interface for AI generation, quick-start tags, and manual toggle |
+| **Prompt Studio** (left) | Chat interface for AI generation, quick-start tags, and manual toggle. **Note: Chat history is concatenated iteratively! To generate a completely separate widget, refresh the page.** |
 | **Manual Bundle** (left) | Editor for XML, TSX, CSS, and dependencies to package custom widgets |
 | **Build Log** (center) | Live terminal with ANSI color support, code viewer, and formatted errors |
 | **Pipeline** (bottom) | Visual tracking of the 8-step build and packaging process |

@@ -8,6 +8,8 @@ interface AppHeaderProps {
 
 export function AppHeader({ onToggleDocs }: AppHeaderProps) {
   const buildStatus = useStore((s) => s.buildStatus)
+  const widgetPlatform = useStore((s) => s.widgetPlatform)
+  const setWidgetPlatform = useStore((s) => s.setWidgetPlatform)
 
   const engineLabel =
     buildStatus === 'idle'        ? 'Engine Ready' :
@@ -48,6 +50,22 @@ export function AppHeader({ onToggleDocs }: AppHeaderProps) {
       <div className={styles.spacer} />
 
       {/* Removed mode switcher */}
+
+      <div className={styles.platformTabs}>
+        <button 
+          className={clsx(styles.platformTab, widgetPlatform === 'web' && styles.platformTabActive)}
+          onClick={() => setWidgetPlatform('web')}
+        >
+          Web
+        </button>
+        <button 
+          className={clsx(styles.platformTab, widgetPlatform === 'native' && styles.platformTabActive)}
+          onClick={() => setWidgetPlatform('native')}
+          title="Native mobile support is coming soon"
+        >
+          Native <span className={styles.upcomingBadge}>Upcoming</span>
+        </button>
+      </div>
 
       <div className={styles.enginePill}>
         <span className={dotClass} />

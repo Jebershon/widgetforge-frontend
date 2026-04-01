@@ -6,6 +6,68 @@
 
 ---
 
+## 🏗️ Platform Architecture at a Glance
+
+WidgetForge is a **full-stack Mendix widget factory** — a React + Vite frontend paired with a Node.js + Express backend that takes raw code blocks (XML, TSX, CSS, JSON) and produces a production-ready `.mpk` file you can drop into Mendix Studio Pro.
+
+### How the Build Pipeline Works (End-to-End)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        YOU (or an AI agent)                         │
+│   Provide: Widget Name · Description · XML · TSX · CSS · JSON deps │
+└──────────────────────┬───────────────────────────────────────────────┘
+                       │  POST /api/bundle
+                       ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  1. SCAFFOLD — Yeoman + @mendix/generator-widget creates a clean   │
+│     Mendix widget project structure in a temp directory.            │
+├──────────────────────────────────────────────────────────────────────┤
+│  2. INJECT — Your XML, TSX, CSS, and any uploaded utility files     │
+│     are written into the scaffolded project.                        │
+├──────────────────────────────────────────────────────────────────────┤
+│  3. CORRECT — Auto-fix pass:                                        │
+│     • Widget ID normalised to com.widgetforge.<name>.<Name>         │
+│     • Bare `createElement` imports stripped (React default handles) │
+│     • Mendix/@mendix hallucinated imports removed                   │
+│     • Missing <propertyGroup> wrappers added to XML                 │
+│     • Invalid XML child tags (translatable, minimumValue…) purged   │
+│     • CSS import line injected into TSX for the Rollup build        │
+│     • XML declaration normalised to <?xml version="1.0"…?>          │
+├──────────────────────────────────────────────────────────────────────┤
+│  4. BUILD — `npm install --legacy-peer-deps` + `npm run build`      │
+│     (Mendix pluggable-widgets-tools Rollup pipeline)                │
+├──────────────────────────────────────────────────────────────────────┤
+│  5. MPK PATCH — Post-build: CSS file injected into .mpk ZIP via     │
+│     adm-zip, package.xml manifest updated to register the asset.    │
+├──────────────────────────────────────────────────────────────────────┤
+│  6. DELIVER — .mpk streamed to the browser for download. Temp       │
+│     directory automatically cleaned up.                              │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Two Modes of Operation
+
+| Mode | Endpoint | What You Provide | What Happens |
+|---|---|---|---|
+| **AI Generation** | `POST /api/generate` | Widget name + plain-English description | AI generates XML/TSX/CSS → server builds → `.mpk` returned |
+| **Manual Bundle** | `POST /api/bundle` | Widget name + XML + TSX + optional CSS/JSON deps | Server builds your code directly → `.mpk` returned |
+
+### New Features & Capabilities
+
+| Feature | Description |
+|---|---|
+| **Multi-AI Provider Support** | Gemini, OpenAI, and Anthropic — configured from the frontend settings modal, not `.env` |
+| **TSX-First Workflow** | All code generation and editing uses TypeScript TSX (not JSX) |
+| **Utility File Uploads** | Drop `.js`/`.ts` helper files into the Utils tab — they're bundled into the `.mpk` and auto-imported |
+| **Live Preview** | Real-time widget rendering using mock Mendix props in the browser |
+| **Monaco Editor** | Full VS Code editing experience with IntelliSense, auto-type acquisition for npm packages |
+| **Platform Switching** | Toggle between Web and Native (Phase 2) — code is backed up/restored per platform |
+| **ANSI Build Logs** | Color-coded terminal output streamed to the browser for easy debugging |
+| **Auto-Corrections** | Server fixes Widget IDs, strips bad imports, wraps properties, normalises XML |
+
+---
+
 ## 🧠 Understanding WidgetForge Before You Prompt
 
 Before generating code, know what WidgetForge does **for you automatically** so you don't fight it:
@@ -13,10 +75,14 @@ Before generating code, know what WidgetForge does **for you automatically** so 
 | WidgetForge handles automatically | You must get right in the prompt |
 |---|---|
 | CSS injection into the `.mpk` archive | Correct XML structure & property groups |
-| Fixing malformed Widget IDs | `import React` default import in TSX |
+| Fixing malformed Widget IDs in XML | `import React` default import in TSX |
 | Stripping bad Mendix library imports | Using `createElement` — NOT JSX |
 | Running `npm install` & `npm run build` | Scoping all CSS to `.widget-yourwidgetname` |
 | Packaging the final `.mpk` file | Valid JSON for the dependencies block |
+| Adding `<propertyGroup>` wrappers if missing | Named export (not `export default`) |
+| Removing invalid XML child tags | Proper Props interface matching XML keys |
+| Injecting CSS import line into TSX | Guard optional props with `?.` |
+| Normalising XML declaration | Use `createElement()` for all elements |
 
 ---
 
@@ -43,9 +109,9 @@ These rules exist because of how the Mendix Rollup build pipeline works internal
 
 ---
 
-## 🤖 The Master Prompt (Copy & Paste)
+## 🤖 The System Prompt (Copy & Paste into Any AI Agent)
 
-Replace everything inside `[square brackets]` with your requirements. The rest must stay exactly as written.
+This is the **complete system prompt** you should use when asking any AI (ChatGPT, Claude, Gemini, Copilot, local models, etc.) to generate a WidgetForge-compatible widget. Replace everything inside `[square brackets]` with your requirements. The rest must stay exactly as written.
 
 ```
 ACT AS a Senior Mendix and React developer. Generate a production-ready Mendix 10 Pluggable Widget for WidgetForge.
@@ -71,14 +137,44 @@ No prose between blocks. A short bullet-point notes section is allowed AFTER all
 BLOCK 1 RULES — XML (widget.xml)
 ════════════════════════════════════════════
 
+CRITICAL STRUCTURAL SCHEMA (Follow this exactly):
+<widget id="com.widgetforge.[namelower].[NamePascal]" ...>
+  <name>[NamePascal]</name>
+  <description>...</description>
+  <properties>
+    <propertyGroup caption="General">
+      <property key="prop1" type="string" ...>...</property>
+    </propertyGroup>
+  </properties>
+</widget>
+
+- ALL <propertyGroup> tags MUST be strictly nested directly inside the <properties> block. Do not orphan them.
 - Widget ID format:  com.widgetforge.[widgetnamelowercase].[WidgetNamePascalCase]
 - Every <property> tag MUST be inside a <propertyGroup caption="..."> tag.
-- Use type="attribute" for Mendix data bindings (with <attributeTypes> child).
-- Use type="action" for microflow/nanoflow triggers.
-- Use type="enumeration" for dropdowns — always include defaultValue.
-- Use type="boolean" for toggles — always include defaultValue.
-- Use type="integer" for numbers — always include defaultValue.
-- Use type="textTemplate" for plain text / expression strings.
+
+VALID PROPERTY TYPES & STUCTURE EXAMPLES:
+1. string:      <property key="..." type="string" defaultValue="...">
+2. boolean:     <property key="..." type="boolean" defaultValue="true|false">
+3. integer:     <property key="..." type="integer" defaultValue="0">
+4. textTemplate:<property key="..." type="textTemplate">
+5. action:      <property key="..." type="action">
+                  <caption>...</caption><description>...</description>
+                  <returnType type="Void" />
+                </property>
+6. attribute:   <property key="..." type="attribute">
+                  <caption>...</caption><description>...</description>
+                  <attributeTypes>
+                    <attributeType name="String"/> <!-- or Integer, Boolean, DateTime, Decimal -->
+                  </attributeTypes>
+                </property>
+7. enumeration: <property key="..." type="enumeration" defaultValue="Key1">
+                  <caption>...</caption><description>...</description>
+                  <enumerationValues>
+                    <enumerationValue key="Key1">Label 1</enumerationValue>
+                    <enumerationValue key="Key2">Label 2</enumerationValue>
+                  </enumerationValues>
+                </property>
+- Any type not on this list (e.g. invalid hallucinated types) will crash Mendix.
 - Include these system properties in the General group:
     <systemProperty key="Label" />
     <systemProperty key="Visibility" />
@@ -151,8 +247,22 @@ BLOCK 4 RULES — JSON (dependencies)
 | ` ```css ` | **CSS** tab |
 | ` ```json ` | **Dependencies** field |
 
+
 4. Click **Bundle** — WidgetForge compiles, patches, and downloads your `.mpk`.
 5. Import the `.mpk` into **Mendix Studio Pro** and configure your attribute/action bindings.
+
+---
+
+## 🧩 Utility Files — Sharing Code Across Widgets
+
+WidgetForge supports **utility file uploads**. If your widget needs helper functions, constants, or shared logic:
+
+1. Go to the **Utils** tab in the Manual Bundle panel.
+2. Drop or browse `.js` / `.ts` files.
+3. WidgetForge auto-generates an import line in the TSX editor (e.g. `import * as helpers from './utils/helpers';`).
+4. Uploaded files are written to `src/utils/` in the build scaffold and included in the final `.mpk`.
+
+> **Tip:** Tell the AI to structure reusable logic (e.g. date formatting, validation) in a separate file, then upload it as a utility.
 
 ---
 
@@ -184,20 +294,28 @@ Small models (7B–13B parameters) sometimes struggle with all 4 blocks at once.
 | Widget properties not showing in Studio Pro | `<property>` outside `<propertyGroup>` | Wrap all properties in `<propertyGroup caption="...">` |
 | Build fails with JSX parse error | AI used angle-bracket JSX | Replace all `<tag>` syntax with `createElement("tag", ...)` |
 | Styles bleed into Mendix UI | CSS not scoped | Prefix every rule with `.widget-yourwidgetname` |
+| `export default` build error | Mendix expects named export | Change to `export function WidgetName(...)` |
+| Props not received at runtime | Props interface keys ≠ XML keys | Ensure interface keys exactly match XML `key=` attributes |
 
 ---
 
 ## ⚙️ What WidgetForge Does Automatically (You Don't Need to Do These)
 
-- ✅ Scaffolds the full Mendix widget project structure
-- ✅ Fixes malformed Widget IDs in XML
+- ✅ Scaffolds the full Mendix widget project structure (via Yeoman + @mendix/generator-widget)
+- ✅ Fixes malformed Widget IDs in XML to `com.widgetforge.<name>.<Name>`
 - ✅ Removes accidental `createElement` bare imports
+- ✅ Strips hallucinated `mendix/` and `@mendix/` imports from TSX
+- ✅ Wraps orphaned `<property>` tags in `<propertyGroup caption="General">`
+- ✅ Removes invalid XML child tags (`translatable`, `minimumValue`, `maximumValue`, etc.)
+- ✅ Normalises the XML declaration to `<?xml version="1.0" encoding="utf-8"?>`
+- ✅ Injects CSS import line into TSX for the Rollup build
 - ✅ Runs `npm install --legacy-peer-deps` for your dependencies
 - ✅ Executes the full Mendix `pluggable-widgets-tools` build
-- ✅ Injects your CSS file into the `.mpk` ZIP binary
+- ✅ Injects your CSS file into the `.mpk` ZIP binary via adm-zip
 - ✅ Updates `package.xml` manifest to register CSS assets
-- ✅ Streams real-time build logs to your browser terminal
+- ✅ Streams real-time build logs (with ANSI color) to your browser terminal
 - ✅ Securely wipes the temp build environment after download
+- ✅ Writes uploaded utility files to `src/utils/` in the scaffold
 
 ---
 

@@ -91,3 +91,23 @@ export async function injectReactTypes(monaco: any) {
         }
     }
 }
+
+// Phase 2: React Native Types
+export async function injectReactNativeTypes(monaco: any) {
+    if (typeCache.has('react-native')) return;
+    
+    try {
+        // We use esm.sh to get the types for react-native
+        const res = await fetch('https://unpkg.com/@types/react-native/index.d.ts');
+        if (res.ok) {
+            const content = await res.text();
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                content,
+                'file:///node_modules/@types/react-native/index.d.ts'
+            );
+            typeCache.add('react-native');
+        }
+    } catch (e) {
+        console.error(`[ATA] Failed to load React Native types:`, e);
+    }
+}

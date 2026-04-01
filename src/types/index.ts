@@ -60,6 +60,12 @@ export interface GeneratedFile {
   content: string
 }
 
+// ── Utility files ──────────────────────────────────────────
+export interface UploadedUtil {
+  name: string      // filename e.g. "mathUtils.js"
+  content: string   // raw text content
+}
+
 // ── App state (Zustand) ────────────────────────────────────
 export interface AppState {
   // Chat
@@ -77,8 +83,13 @@ export interface AppState {
   addLog: (entry: Omit<LogEntry, 'id' | 'timestamp'> & { timestamp?: string }) => void
   setStep: (id: string, status: StepStatus, durationMs?: number) => void
   setBuildStatus: (s: BuildStatus) => void
+  mpkBlobUrl: string | null
   finishBuild: (run: BuildRun) => void
   clearBuild: () => void
+  bundleWidget: () => Promise<void>
+  isGenerating: boolean
+  setIsGenerating: (v: boolean) => void
+
 
   // Generated files
   generatedFiles: GeneratedFile[]
@@ -90,18 +101,38 @@ export interface AppState {
   appMode: AppMode
   setAppMode: (m: AppMode) => void
 
+  // AI Configuration
+  aiProvider: 'gemini' | 'openai' | 'anthropic'
+  aiApiKey: string
+  aiModel: string
+  setAiConfig: (provider: 'gemini' | 'openai' | 'anthropic', apiKey: string, model: string) => void
+
   // Widget Edit State
   widgetName: string
   description: string
   xmlCode: string
-  jsxCode: string
+  tsxCode: string
   cssCode: string
   depsJson: string
   mockProps: Record<string, any>
   setWidgetMetaData: (name: string, desc: string) => void
   setXmlCode: (code: string) => void
-  setJsxCode: (code: string) => void
+  setTsxCode: (code: string) => void
   setCssCode: (code: string) => void
   setDepsJson: (json: string) => void
   setMockProp: (key: string, value: any) => void
+  
+  // Platform selection (Phase 2)
+  widgetPlatform: 'web' | 'native'
+  setWidgetPlatform: (p: 'web' | 'native') => void
+  
+  // Platform Data Separation
+  webCodeBackup?: { tsx: string, css: string, deps: string }
+  nativeCodeBackup?: { tsx: string, css: string, deps: string }
+
+
+  // Utility files (user-uploaded JS/TS helpers)
+  uploadedUtils: UploadedUtil[]
+  addUploadedUtil: (u: UploadedUtil) => void
+  removeUploadedUtil: (name: string) => void
 }
