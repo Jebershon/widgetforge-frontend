@@ -1,5 +1,7 @@
 # WidgetForge — AI Mendix Widget Generator
 
+**Live Application:** [https://widgetforge-frontend.vercel.app/](https://widgetforge-frontend.vercel.app/)
+
 > Phase 1: Frontend UI — Vite + React + TypeScript (SWC)
 
 ## Stack
