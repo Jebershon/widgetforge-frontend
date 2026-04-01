@@ -39,10 +39,18 @@ HARD RULES — Mendix XML (aiXml)
 
 3) Property rules:
 - Every <property> MUST be inside <propertyGroup caption="...">.
-- The ONLY allowed child elements of <property> are <caption> and <description>.
+- Property types determine their allowed child elements:
+  - most types (string, boolean, integer, decimal, etc.) only accept <caption> and <description>.
+  - `enumeration`: must contain <enumerationValues>
+  - `attribute`: must contain <attributeTypes>
+  - `expression`: must contain <returnType>
+  - `object`: must contain <properties> with <propertyGroup> inside.
+  - `action`: must contain <returnType>
+  - `association`: must contain <associationTypes>
+  - `selection`: must contain <selectionTypes>
 - If you need defaults: use attribute defaultValue="...".
 - If required: use attribute required="true|false".
-- Use only valid Mendix property types: string, boolean, integer, decimal, action, attribute, expression, file, icon, object, widgets.
+- Use only valid Mendix property types: string, boolean, integer, decimal, textTemplate, action, attribute, enumeration, datasource, widgets, object, icon, image, file, expression, association, selection.
 - Do NOT invent extra XML child tags like <minimumValue>, <maximumValue>, <translatable>, <onChange>, etc.
 
 HARD RULES — TypeScript/React (aiTsx)
