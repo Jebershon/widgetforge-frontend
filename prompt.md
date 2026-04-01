@@ -235,6 +235,20 @@ BLOCK 2 RULES — TSX ([WidgetName].tsx)
 - ALL React state in hooks (useState, useReducer, useCallback, useMemo).
 - Close dropdowns on outside click using useRef + document.addEventListener("mousedown").
 - Guard all optional props with optional chaining: props.myAttr?.value
+- ITERATING OVER LISTS:
+  - If XML defines a "datasource" (ListValue), you MUST map over its items: props.myDataSource.items?.map(item => ...)
+  - If XML defines an "object" with isList="true", it is a standard array: props.myObjectList?.map(item => ...)
+- CRITICAL — REACT ERROR #31 PREVENTION:
+  Objects are NOT valid React children. NEVER pass a raw object/item into createElement as a child.
+  WRONG:   createElement("span", null, item)           // item is an object → React error #31
+  WRONG:   createElement("span", null, props.myAttr)   // myAttr is an EditableValue object → error
+  CORRECT: createElement("span", null, String(item.someField ?? ""))
+  CORRECT: createElement("span", null, props.myAttr?.value ?? "")
+  Rules:
+  - Always extract .value from EditableValue/DynamicValue before rendering.
+  - When iterating datasource items, use the linked attribute getter (e.g. props.displayAttr?.get(item)?.value) or render a string/number, never the item object itself.
+  - For object lists, access specific sub-property values (item.myKey), never render the whole item.
+  - If unsure about a value's type, wrap it: String(value ?? "")
 
 ════════════════════════════════════════════
 BLOCK 3 RULES — CSS ([WidgetName].css)
@@ -326,6 +340,8 @@ Small models (7B–13B parameters) sometimes struggle with all 4 blocks at once.
 | Styles bleed into Mendix UI | CSS not scoped | Prefix every rule with `.widget-yourwidgetname` |
 | `export default` build error | Mendix expects named export | Change to `export function WidgetName(...)` |
 | Props not received at runtime | Props interface keys ≠ XML keys | Ensure interface keys exactly match XML `key=` attributes |
+| `React error #31: Objects are not valid as React child` | Rendering a raw object/item instead of a primitive | Extract `.value` from EditableValue, use `item.field` not `item`, wrap with `String(val ?? "")` |
+| `dataList.map is not a function` | Calling `.map()` on a datasource (ListValue) instead of its `.items` | Use `props.myDataSource.items?.map(...)` not `props.myDataSource.map(...)` |
 
 ---
 
