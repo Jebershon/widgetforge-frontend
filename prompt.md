@@ -135,84 +135,204 @@ No prose between blocks. A short bullet-point notes section is allowed AFTER all
 
 ════════════════════════════════════════════
 BLOCK 1 RULES — XML (widget.xml)
+Source: https://docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets-property-types/
 ════════════════════════════════════════════
 
-CRITICAL STRUCTURAL SCHEMA (Follow this exactly):
-<widget id="com.widgetforge.[namelower].[NamePascal]" ...>
-  <name>[NamePascal]</name>
-  <description>...</description>
-  <properties>
-    <propertyGroup caption="General">
-      <property key="prop1" type="string" ...>...</property>
-    </propertyGroup>
-  </properties>
+FULL DOCUMENT SKELETON:
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="com.widgetforge.[namelower].[NamePascal]"
+        pluginWidget="true"
+        needsEntityContext="true"
+        offlineCapable="true"
+        supportedPlatform="Web"
+        xmlns="http://www.mendix.com/widget/1.0/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>[NamePascal]</name>
+    <description>...</description>
+    <properties>
+        <propertyGroup caption="General">
+            <!-- properties here -->
+        </propertyGroup>
+    </properties>
 </widget>
 
-- ALL <propertyGroup> tags MUST be strictly nested directly inside the <properties> block. Do not orphan them.
-- Widget ID format:  com.widgetforge.[widgetnamelowercase].[WidgetNamePascalCase]
-- Every <property> tag MUST be inside a <propertyGroup caption="..."> tag.
+STRUCTURAL RULES:
+- <properties> is the ONLY container for <propertyGroup> elements.
+- <propertyGroup caption="..."> is the ONLY container for <property> and <systemProperty>.
+- PropertyGroups can nest (first-level = tabs, second-level = boxes in Studio Pro).
+- EVERY <property> MUST have child elements <caption> and <description>.
 
-VALID PROPERTY TYPES & STUCTURE EXAMPLES:
-1. string:      <property key="..." type="string" defaultValue="...">
-2. boolean:     <property key="..." type="boolean" defaultValue="true|false">
-3. integer:     <property key="..." type="integer" defaultValue="0">
-4. decimal:     <property key="..." type="decimal" defaultValue="0.0">
-5. textTemplate:<property key="..." type="textTemplate">
-6. action:      <property key="..." type="action">
-                  <caption>...</caption><description>...</description>
-                  <returnType type="Void" />
-                </property>
-7. attribute:   <property key="..." type="attribute">
-                  <caption>...</caption><description>...</description>
-                  <attributeTypes>
-                    <attributeType name="String"/> <!-- or Integer, Boolean, DateTime, Decimal -->
-                  </attributeTypes>
-                </property>
-8. enumeration: <property key="..." type="enumeration" defaultValue="Key1">
-                  <caption>...</caption><description>...</description>
-                  <enumerationValues>
-                    <enumerationValue key="Key1">Label 1</enumerationValue>
-                    <enumerationValue key="Key2">Label 2</enumerationValue>
-                  </enumerationValues>
-                </property>
-9. datasource:  <property key="..." type="datasource" isList="true" required="false">
-10. widgets:    <property key="..." type="widgets" dataSource="[datasource_key]" required="false">
-11. object:     <property key="..." type="object" isList="true">
-                  <caption>...</caption><description>...</description>
-                  <properties>
-                    <propertyGroup caption="Object properties">
-                      <property key="..." type="string">...</property>
-                    </propertyGroup>
-                  </properties>
-                </property>
-12. icon:       <property key="..." type="icon" required="false">
-13. image:      <property key="..." type="image" allowUpload="true|false" required="false">
-14. file:       <property key="..." type="file" allowUpload="true|false" required="false">
-15. expression: <property key="..." type="expression" required="false">
-                  <caption>...</caption><description>...</description>
-                  <returnType type="String" /> <!-- or Boolean, DateTime, Decimal, Integer -->
-                </property>
-16. association:<property key="..." type="association" selectableObjects="[datasource_key]">
-                  <caption>...</caption><description>...</description>
-                  <associationTypes>
-                    <associationType name="Reference"/> <!-- or ReferenceSet -->
-                  </associationTypes>
-                </property>
-17. selection:  <property key="..." type="selection" dataSource="[datasource_key]">
-                  <caption>...</caption><description>...</description>
-                  <selectionTypes>
-                    <selectionType name="Single" /> <!-- or Multi, None -->
-                  </selectionTypes>
-                </property>
-- Any type not on this list (e.g. invalid hallucinated types) will crash Mendix.
-- Include these system properties in the General group:
-    <systemProperty key="Label" />
-    <systemProperty key="Visibility" />
-    <systemProperty key="Editability" />
+COMPLETE PROPERTY TYPE REFERENCE:
+
+1. STRING:  <property key="x" type="string" defaultValue="..." multiline="false" required="true|false">
+2. BOOLEAN: <property key="x" type="boolean" defaultValue="true|false">
+3. INTEGER: <property key="x" type="integer" defaultValue="0">
+4. DECIMAL: <property key="x" type="decimal" defaultValue="0.0">
+5. ENUMERATION: <property key="x" type="enumeration" defaultValue="key1">
+   + <enumerationValues><enumerationValue key="key1">Label</enumerationValue></enumerationValues>
+6. ICON: <property key="x" type="icon" required="false">
+7. IMAGE: <property key="x" type="image" required="false" allowUpload="true|false">
+8. WIDGETS: <property key="x" type="widgets" required="false" dataSource="<ds_key>">
+9. EXPRESSION: <property key="x" type="expression" defaultValue="'value'" dataSource="<ds_key>">
+   + <returnType type="String|Boolean|DateTime|Decimal|Integer" />
+10. TEXT TEMPLATE: <property key="x" type="textTemplate" multiline="false" dataSource="<ds_key>">
+11. ACTION: <property key="x" type="action" required="false" dataSource="<ds_key>">
+    NOTE: Do NOT add <returnType> to action properties.
+12. ATTRIBUTE ★ THIS IS HOW YOU BIND TO MENDIX DATA ★
+    <property key="titleAttribute" type="attribute" onChange="<action_key>" dataSource="<ds_key>">
+        <caption>Title</caption>
+        <description>Attribute to be used as title</description>
+        <attributeTypes>
+            <attributeType name="String"/>  <!-- Valid: AutoNumber, Binary, Boolean, DateTime, Enum, HashString, Integer, Long, String, Decimal -->
+        </attributeTypes>
+    </property>
+13. ASSOCIATION: <property key="x" type="association" selectableObjects="<ds_key>" onChange="<action_key>">
+    + <associationTypes><associationType name="Reference|ReferenceSet"/></associationTypes>
+14. OBJECT: <property key="x" type="object" isList="true">
+    + <properties><propertyGroup caption="...">...sub-properties...</propertyGroup></properties>
+15. DATASOURCE: <property key="x" type="datasource" isList="true" required="false">
+16. SELECTION: <property key="x" type="selection" dataSource="<ds_key>" onChange="<action_key>">
+    + <selectionTypes><selectionType name="None|Single|Multi"/></selectionTypes>
+17. FILE: <property key="x" type="file" required="false" allowUpload="true|false">
+
+SYSTEM PROPERTIES (place inside <propertyGroup>):
+    <systemProperty key="Label"/>
+    <systemProperty key="Name"/>
+    <systemProperty key="TabIndex"/>
+    <systemProperty key="Visibility"/>
+    <systemProperty key="Editability"/>
+
+ATTRIBUTE DATASOURCE BINDING RULE (STRICT):
+- ALWAYS bind attribute properties to a datasource when applicable.
+- If a property is inside an object/list (e.g., columns) and relates to row data, its <property type="attribute"> tag MUST have the dataSource="<datasource_property_key>" XML attribute.
+- If missing this binding, Mendix WILL NOT allow the user to select the attribute because it lacks list context.
+- Example: <property key="colAttr" type="attribute" dataSource="propKey">
+
+FORBIDDEN PATTERNS — WILL CAUSE XML ERRORS:
+- NEVER generate child elements: <translatable>, <minimumValue>, <maximumValue>, <defaultValue>, <isList>, <required>, <isDefault>, <onChange>
+- These are ATTRIBUTES on <property>, NOT child elements.
+- CORRECT: <property key="x" type="string" required="false" defaultValue="hi">
+- WRONG:   <property key="x" type="string"><required>false</required></property>
+- The ONLY valid child elements inside <property> are:
+  <caption>, <description>, <attributeTypes>, <enumerationValues>, <returnType>,
+  <associationTypes>, <selectionTypes>, <properties>, <translations>, <actionVariables>
+
+════════════════════════════════════════════
+RELATIVE DATASOURCE PATH (CRITICAL)
+════════════════════════════════════════════
+1. When a property is inside a type="object" (nested structure):
+   - dataSource MUST be a RELATIVE PATH.
+   - NOT the root key directly.
+   - type="object" properties MUST NEVER include dataSource attribute themselves.
+2. Use:
+   dataSource="../<datasource_key>"
+3. Example:
+   ROOT:
+   <property key="dataSource" type="datasource" isList="true" />
+   INSIDE OBJECT:
+   <property key="attribute" type="attribute" dataSource="../dataSource" />
+4. NEVER use:
+   ❌ dataSource="dataSource"   (invalid inside object)
+   ❌ dataSource="data"         (invalid unless exists)
+5. VALIDATION:
+   - If attribute is inside object → MUST start with "../"
+   - If at root level → MUST NOT use "../"
+
+FAILURE WILL CAUSE: "Invalid property path '<key>' in dataSource attribute"
+
+════════════════════════════════════════════
+MANDATORY VALIDATION — MUST PASS BEFORE OUTPUT
+════════════════════════════════════════════
+Before returning the final JSON, you MUST validate the XML:
+1. Scan ALL <property type="attribute"> occurrences.
+2. For EACH attribute property:
+   - If ANY datasource exists in the widget (type="datasource"):
+     → The attribute property MUST include the EXACT datasource key.
+     → If nested in an object, it MUST be prefixed with "../" (e.g., dataSource="../gridDS").
+3. This rule applies EVEN IF:
+   - The attribute is inside an object (type="object" isList="true")
+   - The attribute is deeply nested inside propertyGroups
+4. If ANY attribute property is missing dataSource:
+   → FIX IT BEFORE RETURNING OUTPUT
+5. NEVER assume default binding — Mendix DOES NOT auto-bind attributes.
+6. If multiple datasources exist:
+   → Choose the most relevant one based on context (usually the main list datasource)
+7. FINAL CHECK:
+   - ZERO attribute properties without dataSource
+   - If any found → REWRITE XML before returning
+
+FAILURE TO FOLLOW THIS WILL BREAK THE WIDGET IN Mendix.
+
+════════════════════════════════════════════
+SELF-CORRECTION LOOP
+════════════════════════════════════════════
+After generating XML:
+Step 1: Validate attribute bindings
+Step 2: If invalid → regenerate ONLY XML section
+Step 3: Re-check again
+Step 4: Repeat until valid
+
+Do NOT return partially valid XML.
+
 
 ════════════════════════════════════════════
 BLOCK 2 RULES — TSX ([WidgetName].tsx)
 ════════════════════════════════════════════
+
+════════════════════════════════════════════
+STRICT TYPESCRIPT TYPING (MANDATORY)
+════════════════════════════════════════════
+1. NEVER use implicit 'any' types.
+   - ALL function parameters MUST have explicit types.
+2. This applies to:
+   - Arrow functions
+   - useCallback
+   - map() callbacks
+   - event handlers
+   - inline functions
+3. Examples:
+   ❌ WRONG: const handleChange = (value) => { ... }
+   ✅ CORRECT: const handleChange = (value: number) => { ... }
+4. React Hooks:
+   ❌ WRONG: useCallback((newPage) => { ... })
+   ✅ CORRECT: useCallback((newPage: number) => { ... })
+5. Array mapping:
+   ❌ WRONG: items.map(item => ...)
+   ✅ CORRECT: items.map((item: any) => ...)
+   OR better: items.map((item: MyType) => ...)
+6. If type is unknown:
+   → Use "any" explicitly (NOT implicit)
+   Example: (item: any)
+7. FINAL VALIDATION:
+   - Scan for ALL function parameters
+   - Ensure NONE are untyped
+   - If found → FIX before returning
+FAILURE WILL CAUSE: TS7006: Parameter implicitly has an 'any' type
+
+════════════════════════════════════════════
+ATTRIBUTE ACCESS RULE (CRITICAL)
+════════════════════════════════════════════
+
+1. IF attribute is inside OBJECT (type="object", isList="true"):
+   → Type is EditableValue<T>
+   → Access using:
+     attribute.value
+
+   ❌ NEVER use:
+     attribute.get(item)
+
+2. IF attribute is linked to DATASOURCE (root level):
+   → Type is ListAttributeValue<T>
+   → Access using:
+     attribute.get(item).value
+
+3. VALIDATION:
+   - If ".get(" is used → ensure type is ListAttributeValue
+   - If type is EditableValue → ensure NO ".get(" usage
+
+FAILURE WILL CAUSE:
+TS2339: Property 'get' does not exist on type 'EditableValue'
 
 - Line 1 MUST be:
   import React, { createElement, useState, useRef, useEffect, useCallback } from "react";
@@ -235,20 +355,32 @@ BLOCK 2 RULES — TSX ([WidgetName].tsx)
 - ALL React state in hooks (useState, useReducer, useCallback, useMemo).
 - Close dropdowns on outside click using useRef + document.addEventListener("mousedown").
 - Guard all optional props with optional chaining: props.myAttr?.value
-- ITERATING OVER LISTS:
-  - If XML defines a "datasource" (ListValue), you MUST map over its items: props.myDataSource.items?.map(item => ...)
-  - If XML defines an "object" with isList="true", it is a standard array: props.myObjectList?.map(item => ...)
+- MENDIX TYPE SHIMS: Since you cannot import from 'mendix', if your Props interface uses Mendix types, you MUST define them as empty interfaces or simple types at the top of the file. 
+  Example: 
+  export interface ActionValue { readonly canExecute: boolean; readonly isExecuting: boolean; execute(): void; }
+  export interface EditableValue<T> { readonly value?: T; readonly readOnly: boolean; setValue(value?: T): void; }
+  export interface ListValue { readonly items?: any[]; readonly status: string; }
+  export interface ListAttributeValue<T> { get(item: any): EditableValue<T>; }
+- DATASOURCES vs OBJECT LISTS - CRITICAL DIFFERENCE:
+  1. DATASOURCE (ListValue): Use props.myDataSource.items?.map(item => ...).
+     Attributes linked to a datasource become ListAttributeValue, so you MUST use .get(item).
+     Example: props.myLinkedAttr?.get(item)?.value
+  2. OBJECT LIST (isList="true"): It's a standard array. Use props.myObjectList?.map(obj => ...).
+     Attributes inside objects are passed as direct EditableValue (NOT ListAttributeValue).
+     NEVER use .get(item) on them!
+     Example: obj.myInnerAttr?.value
+- EDITABLEVALUE & ACTIONVALUE METHODS - NO HALLUCINATIONS:
+  - EditableValue has a .value property to GET the value.
+  - EditableValue has a .setValue(newValue) method to SET the value.
+  - NEVER write .getValue() or .getValue(x). It DOES NOT EXIST in the Mendix API (TS2551).
+  - ActionValue has an .execute() method. NEVER write .run() or .executeAction().
 - CRITICAL — REACT ERROR #31 PREVENTION:
   Objects are NOT valid React children. NEVER pass a raw object/item into createElement as a child.
   WRONG:   createElement("span", null, item)           // item is an object → React error #31
   WRONG:   createElement("span", null, props.myAttr)   // myAttr is an EditableValue object → error
   CORRECT: createElement("span", null, String(item.someField ?? ""))
   CORRECT: createElement("span", null, props.myAttr?.value ?? "")
-  Rules:
-  - Always extract .value from EditableValue/DynamicValue before rendering.
-  - When iterating datasource items, use the linked attribute getter (e.g. props.displayAttr?.get(item)?.value) or render a string/number, never the item object itself.
-  - For object lists, access specific sub-property values (item.myKey), never render the whole item.
-  - If unsure about a value's type, wrap it: String(value ?? "")
+  If unsure about a value's type, wrap it: String(value ?? "")
 
 ════════════════════════════════════════════
 BLOCK 3 RULES — CSS ([WidgetName].css)
